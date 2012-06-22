@@ -1,0 +1,1 @@
+Hangman game written in python for a course in FMI
