@@ -7,20 +7,28 @@ from pygame.locals import *
 
 class Play:
     def __init__(self, screen, chosen_category):
-        background = pygame.image.load('images\hangman_empty.png')
-        screen.blit(background, (0, 0))
-        random_word_lenght = len(self.load_word(chosen_category))
+        """Initialize the game field: 
+        generates random word from a file, display the alphabet"""
+        
+        self.background = pygame.image.load('images\hangman_empty.png')
+        screen.blit(self.background, (0, 0))
         self.screen = screen
-
-        i = 0
-        while i < random_word_lenght:
-            underline_image = pygame.image.load('images/underline_word.png')
-            screen.blit(underline_image, (400 + i*35, 200))
-            i = i + 1
         self.letters = list()
+        self.random_word_lenght = len(self.load_word(chosen_category))
+        self.display_underlines(self.random_word_lenght)
         pygame.font.init()
         self.my_font = pygame.font.Font('fonts\stylo_.ttf', 30)
-        self.display_alphabet(screen)
+        self.display_alphabet()
+        self.chosen_letters = list()
+    
+    def display_underlines(self, random_word_lenght):
+        """Display the underlines, each line for each letter in the must-guess word"""
+        i_line = 0
+        while i_line < random_word_lenght:
+            underline_image = pygame.image.load('images/underline_word.png')
+            self.screen.blit(underline_image, (400 + i_line * 35, 200))
+            i_line = i_line + 1
+    
     
     def alphabet_list(self):
         """Return list with bulgarian letters"""
@@ -29,29 +37,27 @@ class Play:
         alphabet = [(letter.strip()) for letter in alphabet]
         return alphabet
     
-    def display_alphabet(self, screen):
+    
+    def display_alphabet(self):
         """Show the letters in bulgarian alphabet in 6x5 rectangle"""
-        alphabet = self.alphabet_list()
+        self.alphabet = self.alphabet_list()
         letter_space = 0
         slice = 0
         while slice < 30:
-            for letter in alphabet[slice : slice + 6]:
-                self.letters.append(Letter((400 + letter_space, 300 + slice * 6), self.my_font, letter, screen))
+            for character in self.alphabet[slice : slice + 6]:
+                letter = Letter((400 + letter_space, 300 + slice * 6), self.my_font, character, self.screen)
+                self.letters.append(letter)
                 letter_space += 30
             slice += 6
             letter_space = 0
-            
         
-    def main(self, screen):
-        background = pygame.image.load('images\hangman_play.png')
-        screen.blit(background,(0, 0))
     
     def load_word(self, category_name):
         """Load a random word from a file"""
         filename = 'dict_files/' + category_name + '.txt'
         with open(filename) as source_file:
             buffer = source_file.readlines()
-        self.word = random.choice(buffer)
+        self.word = random.choice(buffer).strip()
         return self.word
         
     def handle_events(self):
@@ -63,20 +69,29 @@ class Play:
     
     def handle_mouse_events(self, pos, i):
         """Handle mouse events"""
+        (x, y) = pos
         for letter in self.letters:
             if letter.mouse_over(pos):
-                if letter.let not in self.word:
+                self.screen.blit(self.background, letter.pos, pygame.Rect(x, y, 25, 25))
+                self.chosen_letters.append(letter)
+                print(self.chosen_letters)
+                if letter.character not in self.word:
                     self.load_part_i(i)
                     return False
                 else:
-                    index = self.word.index(letter.let)
-                    self.display_guessed_letter(index, letter.let)
-                    return True
+                    indices = [n for n in range(len(self.word)) if self.word.find(letter.character, n) == n]
+                    self.display_guessed_letters(indices, letter.character)
+                    return True 
         return True
-        
-    def display_guessed_letter(self, index, letter):
-        show_letter = self.my_font.render(letter, True, (48, 79, 157))
-        self.screen.blit(show_letter, (400 + index*35, 170))
+    
+    #save the loaded words
+    #save the guessed letters to not be clicked again
+    
+    def display_guessed_letters(self, indices, letter):
+        """Display the right guessed letters"""
+        for index in indices:
+            show_letter = self.my_font.render(letter, True, (48, 79, 157))
+            self.screen.blit(show_letter, (400 + index * 35, 170))
      
     def load_part_i(self, i):
         """Load a part of the hangman"""
@@ -107,11 +122,11 @@ class Letter:
     def __init__(self, pos, my_font, letter, screen):
         self.my_font = my_font
         self.pos = pos
-        self.normal = self.my_font.render(letter, True, (181, 76, 90), (195, 190, 187))
-        self.highlight = self.my_font.render(letter, True, (181, 76, 90), (165, 175, 184))
+        self.normal = self.my_font.render(letter, True, (181, 76, 90))
+        self.highlight = self.my_font.render('i', True, (181, 76, 90))
         self.image = self.normal
         self.show = screen.blit(self.image, self.pos)
-        self.let = letter
+        self.character = letter
         
         
     def mouse_over(self, pos):
