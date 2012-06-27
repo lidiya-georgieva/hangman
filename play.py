@@ -20,6 +20,7 @@ class Play:
         self.my_font = pygame.font.Font('fonts\stylo_.ttf', 30)
         self.display_alphabet()
         self.chosen_letters = list()
+        self.right_letters = list()
     
     def display_underlines(self, random_word_lenght):
         """Display the underlines, each line for each letter in the must-guess word"""
@@ -70,15 +71,23 @@ class Play:
     def handle_mouse_events(self, pos, i):
         """Handle mouse events"""
         (x, y) = pos
+        win_flag = False
         for letter in self.letters:
-            if letter.mouse_over(pos):
+           
+            if len(self.right_letters) == len(self.word):
+                win_flag = True
+                return "WINNER"
+                    
+            if letter.mouse_over(pos) and letter not in self.chosen_letters and not win_flag:
                 self.screen.blit(self.background, letter.pos, pygame.Rect(x, y, 25, 25))
                 self.chosen_letters.append(letter)
-                print(self.chosen_letters)
+                 
                 if letter.character not in self.word:
+                    print(i)
                     self.load_part_i(i)
                     return False
                 else:
+                    
                     indices = [n for n in range(len(self.word)) if self.word.find(letter.character, n) == n]
                     self.display_guessed_letters(indices, letter.character)
                     return True 
@@ -90,6 +99,7 @@ class Play:
     def display_guessed_letters(self, indices, letter):
         """Display the right guessed letters"""
         for index in indices:
+            self.right_letters.append(letter)
             show_letter = self.my_font.render(letter, True, (48, 79, 157))
             self.screen.blit(show_letter, (400 + index * 35, 170))
      
@@ -123,7 +133,7 @@ class Letter:
         self.my_font = my_font
         self.pos = pos
         self.normal = self.my_font.render(letter, True, (181, 76, 90))
-        self.highlight = self.my_font.render('i', True, (181, 76, 90))
+        self.highlight = self.my_font.render(letter, True, (181, 76, 90), (255, 255, 0))
         self.image = self.normal
         self.show = screen.blit(self.image, self.pos)
         self.character = letter

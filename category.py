@@ -18,7 +18,8 @@ class Category:
     def draw(self, screen):
         self.show = screen.blit(self.image, self.pos)
     
-    def mouseOver(self, pos):
+    def mouse_over(self, pos):
+        
         if self.show.collidepoint(pos):
             self.image = self.highlight
             return True
