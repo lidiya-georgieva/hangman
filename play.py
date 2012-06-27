@@ -6,29 +6,42 @@ from pygame.locals import *
 
 
 class Play:
-    def __init__(self, screen, chosen_category):
+    def __init__(self, screen, chosen_category, generated_words):
         """Initialize the game field: 
         generates random word from a file, display the alphabet"""
         
+        self.word = ""
+        self.generated_words = generated_words
         self.background = pygame.image.load('images\hangman_empty.png')
         screen.blit(self.background, (0, 0))
         self.screen = screen
         self.letters = list()
-        self.random_word_lenght = len(self.load_word(chosen_category))
-        self.display_underlines(self.random_word_lenght)
+        self.word = self.load_word(chosen_category)
+        self.display_underlines()
         pygame.font.init()
         self.my_font = pygame.font.Font('fonts\stylo_.ttf', 30)
         self.display_alphabet()
         self.chosen_letters = list()
         self.right_letters = list()
+        
     
-    def display_underlines(self, random_word_lenght):
-        """Display the underlines, each line for each letter in the must-guess word"""
+    def display_underlines(self):
+        """Display the underlines, each line for each letter in the must-guess word
         i_line = 0
         while i_line < random_word_lenght:
             underline_image = pygame.image.load('images/underline_word.png')
             self.screen.blit(underline_image, (400 + i_line * 35, 200))
-            i_line = i_line + 1
+            i_line = i_line + 1"""
+        i_line = 0
+        self.underline_count = 0
+        for char in self.word:
+            if char != ' ':
+                underline_image = pygame.image.load('images/underline_word.png')
+                self.screen.blit(underline_image, (400 +  i_line* 35, 200))
+                self.underline_count += 1
+            i_line += 1
+           
+                
     
     
     def alphabet_list(self):
@@ -58,43 +71,48 @@ class Play:
         filename = 'dict_files/' + category_name + '.txt'
         with open(filename) as source_file:
             buffer = source_file.readlines()
-        self.word = random.choice(buffer).strip()
-        return self.word
         
-    def handle_events(self):
-        """Handle keyboard events"""
-        key = pygame.key.get_pressed()
-        if key[pygame.K_a]:
-            print("letter a is pressed")
-        #pygame.display.flip()
+        
+        if len(buffer) == len(self.generated_words):
+            print("must quit")
+            return 
+        word = random.choice(buffer).strip()
+        while word in self.generated_words:
+            word = random.choice(buffer).strip()
+        self.generated_words.append(word)
+        return word
+        
     
     def handle_mouse_events(self, pos, i):
         """Handle mouse events"""
         (x, y) = pos
         win_flag = False
         for letter in self.letters:
-           
-            if len(self.right_letters) == len(self.word):
+            if len(self.right_letters) == self.underline_count:
                 win_flag = True
                 return "WINNER"
-                    
+            if i > 10:
+                self.display_left_letters()
             if letter.mouse_over(pos) and letter not in self.chosen_letters and not win_flag:
                 self.screen.blit(self.background, letter.pos, pygame.Rect(x, y, 25, 25))
                 self.chosen_letters.append(letter)
                  
                 if letter.character not in self.word:
-                    print(i)
                     self.load_part_i(i)
                     return False
                 else:
-                    
                     indices = [n for n in range(len(self.word)) if self.word.find(letter.character, n) == n]
                     self.display_guessed_letters(indices, letter.character)
                     return True 
         return True
     
-    #save the loaded words
-    #save the guessed letters to not be clicked again
+    
+    def display_left_letters(self):
+        for character in self.word:
+            if character not in self.right_letters:
+                index = [n for n in range(len(self.word)) if self.word.find(character, n) == n]
+                show_letter = self.my_font.render(character, True, (247, 228, 99))
+                self.screen.blit(show_letter, (400 + index[0] * 35, 170))
     
     def display_guessed_letters(self, indices, letter):
         """Display the right guessed letters"""
