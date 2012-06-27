@@ -15,7 +15,6 @@ class Player:
         screen.blit(self.background, (0, 0))
         pygame.font.init()
         self.my_font = pygame.font.Font('fonts\stylo_.ttf', 30)
-        self.word = ""
         self.generated_words = generated_words
         self.letters = list()
         self.chosen_letters = list()
@@ -70,66 +69,49 @@ class Player:
         self.generated_words.append(word)
         return word
 
-    def handle_mouse_events(self, pos, i):
+    def handle_mouse_events(self, pos, ith_part_of_hangman):
         """Handle mouse events"""
         (x, y) = pos
-        win_flag = False
         for letter in self.letters:
             if len(self.right_letters) == self.underline_count:
-                win_flag = True
                 return "WINNER"
-            if i > 10:
-                self.display_left_letters()
-            if letter.mouse_over(pos) and letter not in self.chosen_letters and not win_flag:
+            elif ith_part_of_hangman > 10:
+                self.display_not_guessed_letters()
+            elif letter.mouse_over(pos) and letter not in self.chosen_letters:
                 self.screen.blit(self.background, letter.pos, pygame.Rect(x, y, 25, 25))
                 self.chosen_letters.append(letter)
-                 
-                if letter.character not in self.word:
-                    self.load_part_i(i)
+                if letter.name not in self.word:
+                    self.load_part_i(ith_part_of_hangman)
                     return False
                 else:
-                    indices = [n for n in range(len(self.word)) if self.word.find(letter.character, n) == n]
-                    self.display_guessed_letters(indices, letter.character)
-                    return True 
+                    indices = [n for n in range(len(self.word)) if self.word.find(letter.name, n) == n]
+                    self.display_guessed_letters(indices, letter.name)
         return True
 
-    def display_left_letters(self):
-        for character in self.word:
-            if character not in self.right_letters:
-                index = [n for n in range(len(self.word)) if self.word.find(character, n) == n]
-                show_letter = self.my_font.render(character, True, (247, 228, 99))
-                self.screen.blit(show_letter, (400 + index[0] * 35, 170))
+    def display_not_guessed_letters(self):
+        """Display the not guessed letters in case of loss"""
+        for char in self.word:
+            if char not in self.right_letters:
+                indices = [n for n in range(len(self.word)) if self.word.find(char, n) == n]
+                for index in indices:
+                    show_letter = self.my_font.render(char, True, (247, 228, 99))
+                    self.screen.blit(show_letter, (400 + index * 35, 170))
 
-    def display_guessed_letters(self, indices, letter):
+    def display_guessed_letters(self, indices, letter, color=(48, 79, 157)):
         """Display the right guessed letters"""
         for index in indices:
             self.right_letters.append(letter)
-            show_letter = self.my_font.render(letter, True, (48, 79, 157))
+            show_letter = self.my_font.render(letter, True, color)
             self.screen.blit(show_letter, (400 + index * 35, 170))
 
     def load_part_i(self, i):
         """Load a part of the hangman"""
         image = pygame.image.load('images\hangman_' + str(i) + '.png')
-        if i == 1:
-            self.screen.blit(image, (8, 450))
-        elif i == 2:
-            self.screen.blit(image, (95, 45))
-        elif i == 3:
-            self.screen.blit(image, (110, 36))
-        elif i == 4:
-            self.screen.blit(image, (260, 47))
-        elif i == 5:
-            self.screen.blit(image, (202, 110))
-        elif i == 6: 
-            self.screen.blit(image, (260, 220))
-        elif i == 7: 
-            self.screen.blit(image, (180, 230))
-        elif i == 8: 
-            self.screen.blit(image, (270, 230))
-        elif i == 9: 
-            self.screen.blit(image, (270, 350))
-        elif i == 10: 
-            self.screen.blit(image, (210, 350))
+        parts_positions_on_screen = {1: (8, 450), 2: (95, 45), 3: (110, 36), 
+                                     4: (260, 47), 5: (202, 110), 6: (260, 220), 
+                                     7: (180, 230), 8: (270, 230), 9: (270, 350), 
+                                     10: (210, 350)}
+        self.screen.blit(image, parts_positions_on_screen[i])
 
 
 class Letter:
@@ -141,7 +123,7 @@ class Letter:
         self.highlight = self.my_font.render(letter, True, (181, 76, 90), (255, 255, 0))
         self.image = self.normal
         self.show = screen.blit(self.image, self.pos)
-        self.character = letter
+        self.name = letter
 
     def mouse_over(self, pos):
         if self.show.collidepoint(pos):
