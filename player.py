@@ -24,7 +24,8 @@ class Player:
         self.word = self.load_word(chosen_category)
         self.display_underlines()
         self.display_alphabet()
-
+        
+        
     def display_underlines(self):
         """Display the underlines,
         each line for each letter in the must-guess word"""
@@ -49,7 +50,7 @@ class Player:
         slice = 0
         while slice < 30:
             for character in self.alphabet[slice: slice + 6]:
-                letter = Letter((400 + letter_space, 300 + slice * 6), self.my_font, character, self.screen)
+                letter = Letter((527 + letter_space, 300 + slice * 6), self.my_font, character, self.screen)
                 self.letters.append(letter)
                 letter_space += 30
             slice += 6
@@ -73,7 +74,7 @@ class Player:
         """Handle mouse events"""
         (x, y) = pos
         for letter in self.letters:
-            if len(self.right_letters) == self.underline_count:
+            if len(self.right_letters) == self.underline_count and self.underline_count:
                 return "WINNER"
             elif ith_part_of_hangman > 10:
                 self.display_not_guessed_letters()
@@ -103,6 +104,7 @@ class Player:
             self.right_letters.append(letter)
             show_letter = self.my_font.render(letter, True, color)
             self.screen.blit(show_letter, (400 + index * 35, 170))
+        
 
     def load_part_i(self, i):
         """Load a part of the hangman"""
