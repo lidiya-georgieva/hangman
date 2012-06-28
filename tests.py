@@ -38,7 +38,10 @@ class HangmanTest(unittest.TestCase):
     def test_loaded_font_object_not_none(self):
         font = self.hangman.init_font(40)
         self.assertIsNotNone(font)
-      
+    
+    def test_play_and_quit_options(self):
+        options = self.hangman.play_or_quit_options(self.screen, True)
+        self.assertEqual(len(options), 2)
     #test_play_or_quit : извиквам и проверявам върнатия резултат
     
     #display_losses_wins(self, losses, wins):проверявам загубите дали са равни на еди какво си
