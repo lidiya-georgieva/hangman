@@ -1,1 +1,1 @@
-Hangman game written in python for a course in FMI (with bulgarian words only)
+Hangman game w ritten in python for a course in FMI (with bulgarian words only)
